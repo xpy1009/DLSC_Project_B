@@ -27,6 +27,30 @@ def initial_condition(x, a):
 
   return f_xy
 
+
+def initial_condition_fast(x, mu):
+  d = mu.shape[0]
+  n = x.shape[0]
+  u_0 = torch.zeros((n))
+
+  x_init = np.repeat(x, d*d, axis=0) * np.pi
+  x_init = x_init.reshape(n, d*d, -1) 
+  count = 0
+  for i in range(1, d+1, 1):
+    for j in range(1, d+1, 1):
+      x_init[:, count, 0] *= i
+      x_init[:, count, 1] *= j
+      count += 1    
+  u = np.sin(x_init)
+  count = 0
+  for i in range(1, d+1, 1):
+    for j in range(1, d+1, 1):
+      u_0[:] += u[:, count, 0] * u[:, count, 1]* mu[i-1, j-1] * (i*i + j*j) ** (-1)
+      count += 1
+
+  return u_0 * np.pi / (d * d)
+
+
 def final(x,a,T):
   K = a.shape[0]
   u_xyt = torch.zeros(1)
@@ -44,6 +68,28 @@ def final_value(x, a, T):
     u_xyt[i] = final(x[i, :], a, T)
 
   return u_xyt
+
+def final_value_fast(x, mu, T):
+  d = mu.shape[0]
+  n = x.shape[0]
+  u_T = torch.zeros((n))
+
+  x_final = np.repeat(x, d*d, axis=0) * np.pi
+  x_final = x_final.reshape(n, d*d, -1) 
+  count = 0
+  for i in range(1, d+1, 1):
+    for j in range(1, d+1, 1):
+      x_final[:, count, 0] *= i
+      x_final[:, count, 1] *= j
+      count += 1    
+  u = np.sin(x_final)
+  count = 0
+  for i in range(1, d+1, 1):
+    for j in range(1, d+1, 1):
+      u_T[:] += u[:, count, 0] * u[:, count, 1]* mu[i-1, j-1] * (i*i + j*j) ** (-1) * np.cos(0.1 * np.pi * T * np.sqrt(i*i + j*j))
+      count += 1
+
+  return u_T * np.pi / (d * d)    
 
 def convert(tens, domain_extrema):
   assert (tens.shape[1] == domain_extrema.shape[0])
