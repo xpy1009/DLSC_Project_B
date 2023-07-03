@@ -11,7 +11,6 @@ from sklearn.preprocessing import MinMaxScaler
 from torch.utils.tensorboard import SummaryWriter
 
 
-
 def activation(name):
     if name in ['tanh', 'Tanh']:
         return nn.Tanh()
@@ -40,9 +39,9 @@ def save_checkpoint(model, optimizer, scheduler, save_dir):
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'scheduler_state_dict': scheduler.state_dict()
-        }, save_dir)
+    }, save_dir)
 
-    
+
 def load_checkpoint(model, optimizer, scheduler, save_dir, switch=1):
     '''load model and optimizer'''
 
@@ -55,8 +54,9 @@ def load_checkpoint(model, optimizer, scheduler, save_dir, switch=1):
         print('preobtimizer loaded!')
 
     print('Pretrained model loaded!')
-    
-    return model,optimizer,scheduler
+
+    return model, optimizer, scheduler
+
 
 ################################################################
 #  2d fourier layer
@@ -104,7 +104,7 @@ class SpectralConv2d(nn.Module):
 
 
 class FNO2d(nn.Module):
-    def __init__(self, fno_architecture, device=None, padding_frac= 1/4):
+    def __init__(self, fno_architecture, device=None, padding_frac=1 / 4):
         super(FNO2d, self).__init__()
 
         """
@@ -162,7 +162,7 @@ class FNO2d(nn.Module):
         x = F.gelu(x)
         x = self.fc2(x)
         return x
-    
+
 
 torch.manual_seed(0)
 np.random.seed(0)
@@ -171,37 +171,35 @@ np.random.seed(0)
 # writer = SummaryWriter(log_dir="Diffusion_d5")
 # tags = ["train_loss", "data_error","learning_rate"]
 
-pre_model_save_path = './model/FN0_K24_checkpoint100.pt'
+pre_model_save_path = './model/Wave/FN0_K24_checkpoint1000.pt'
 
+n_train = 512
+n_test = 128
 
-n_total = 200
-n_train =150
 res = 64
 
-u_0 = torch.from_numpy(np.load('Dataset/wave/64_64/u0s_K24.npy').reshape(n_total,res,res,3)).float()
-u_T = torch.from_numpy(np.load('Dataset/wave/64_64/uTs_K24.npy').reshape(n_total,res,res,1)).float()
+u_0 = torch.from_numpy(np.load('../Dataset/wave/64_64/u0s_K24.npy').reshape(n_train + n_test, res, res, 3)).float()
+u_T = torch.from_numpy(np.load('../Dataset/wave/64_64/uTs_K24.npy').reshape(n_train + n_test, res, res, 1)).float()
 print("shape of u_0:", u_0.shape)
 print("shape of u_T:", u_T.shape)
 
-#------------rescal inverse-------------------#
-u_0_scale = torch.from_numpy(np.load('Dataset/wave/64_64/u0s_K24.npy').reshape(200,64,64,3)).float()
-u_T_scale = torch.from_numpy(np.load('Dataset/wave/64_64/uTs_K24.npy').reshape(200,64,64,1)).float()
+# ------------rescal inverse-------------------#
+u_0_scale = torch.from_numpy(np.load('../Dataset/wave/64_64/u0s_K24.npy').reshape(n_train + n_test, 64, 64, 3)).float()
+u_T_scale = torch.from_numpy(np.load('../Dataset/wave/64_64/uTs_K24.npy').reshape(n_train + n_test, 64, 64, 1)).float()
 # scale data with normalization
-min_vals_input = u_0_scale[0:n_train,:,:,0].min()
-max_vals_input = u_0_scale[0:n_train,:,:,0].max()
-min_vals_output = u_T_scale[0:n_train,:,:,0].min()
-max_vals_output = u_T_scale[0:n_train,:,:,0].max()
+min_vals_input = u_0_scale[0:n_train, :, :, 0].min()
+max_vals_input = u_0_scale[0:n_train, :, :, 0].max()
+min_vals_output = u_T_scale[0:n_train, :, :, 0].min()
+max_vals_output = u_T_scale[0:n_train, :, :, 0].max()
 
+tr_inputs = (u_0[0:n_train, :, :, 0:1] - min_vals_input) / (max_vals_input - min_vals_input)
+tr_label = (u_T[0:n_train, :, :, 0:1] - min_vals_output) / (max_vals_output - min_vals_output)
 
-tr_inputs = (u_0[0:n_train,:,:,0:1] - min_vals_input) / (max_vals_input - min_vals_input)
-tr_label = (u_T[0:n_train,:,:,0:1] - min_vals_output) / (max_vals_output - min_vals_output)
-
-ts_inputs = (u_0[n_train:,:,:,0:1] - min_vals_input) / (max_vals_input - min_vals_input)
-ts_label = (u_T[n_train:,:,:,0:1] - min_vals_output) / (max_vals_output - min_vals_output)
-
+ts_inputs = (u_0[n_train:, :, :, 0:1] - min_vals_input) / (max_vals_input - min_vals_input)
+ts_label = (u_T[n_train:, :, :, 0:1] - min_vals_output) / (max_vals_output - min_vals_output)
 
 batch_size = 50
-training_set = DataLoader(TensorDataset(tr_inputs,tr_label), batch_size=batch_size, shuffle=True)
+training_set = DataLoader(TensorDataset(tr_inputs, tr_label), batch_size=batch_size, shuffle=True)
 testing_set = DataLoader(TensorDataset(ts_inputs, ts_label), batch_size=50, shuffle=True)
 
 learning_rate = 0.01
@@ -212,17 +210,17 @@ gamma = 0.5
 
 # model
 fno_architectures = {
-  "modes": 16,
-  "width": 32,
-  "n_layers": 4,
-  "retrain_fno": 100
+    "modes": 16,
+    "width": 32,
+    "n_layers": 4,
+    "retrain_fno": 100
 }
 fno = FNO2d(fno_architectures)
 optimizer = Adam(fno.parameters(), lr=learning_rate, weight_decay=1e-5)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
 if pre_model_save_path:
-    fno, optimizer, scheduler=load_checkpoint(fno,optimizer,scheduler,pre_model_save_path,switch=None)
+    fno, optimizer, scheduler = load_checkpoint(fno, optimizer, scheduler, pre_model_save_path, switch=None)
 
 for param_group in optimizer.param_groups:
     print(param_group['lr'])
@@ -233,8 +231,8 @@ test_relative_l2 = 0.0
 
 for step, (input_batch, output_batch) in enumerate(testing_set):
     output_pred_batch = fno(input_batch).squeeze(2)
-    output_pred_batch = output_pred_batch * (max_vals_output - min_vals_output)  + min_vals_output
-    output_batch = output_batch * (max_vals_output - min_vals_output)  + min_vals_output
+    output_pred_batch = output_pred_batch * (max_vals_output - min_vals_output) + min_vals_output
+    output_batch = output_batch * (max_vals_output - min_vals_output) + min_vals_output
     loss_f = (torch.mean((output_pred_batch - output_batch) ** 2) / torch.mean(output_batch ** 2)) ** 0.5 * 100
     test_relative_l2 += loss_f
 test_relative_l2 /= len(testing_set)
@@ -243,16 +241,16 @@ print("test_mse = ", test_relative_l2)
 print(output_batch.shape)
 print(output_pred_batch.shape)
 fig, axs = plt.subplots(1, 2, figsize=(16, 8), dpi=150)
-#im1 = axs[0].contourf(u_0[0,:,:,1],u_0[0,:,:,2],output_batch[5,:,:,0],levels = 64,cmap="jet")
-im1 = axs[0].imshow(input_batch[15,:,:,0],cmap="jet")
+# im1 = axs[0].contourf(u_0[0,:,:,1],u_0[0,:,:,2],output_batch[5,:,:,0],levels = 64,cmap="jet")
+im1 = axs[0].imshow(output_batch[23, :, :, 0], cmap="jet")
 axs[0].set_xlabel("x1")
 axs[0].set_ylabel("x2")
 plt.colorbar(im1, ax=axs[0])
 axs[0].grid(True, which="both", ls=":")
-axs[0].set_title("u_0")
+axs[0].set_title("true")
 axs[0].set(aspect='equal')
-#im2 = axs[1].contourf(u_0[0,:,:,1],u_0[0,:,:,2],output_pred_batch.detach()[5,:,:,0],levels = 64,cmap="jet")
-im2 = axs[1].imshow(output_pred_batch.detach()[15,:,:,0],cmap="jet")
+# im2 = axs[1].contourf(u_0[0,:,:,1],u_0[0,:,:,2],output_pred_batch.detach()[5,:,:,0],levels = 64,cmap="jet")
+im2 = axs[1].imshow(output_pred_batch.detach()[23, :, :, 0], cmap="jet")
 axs[1].set_xlabel("x1")
 axs[1].set_ylabel("x2")
 plt.colorbar(im2, ax=axs[1])
