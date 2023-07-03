@@ -51,6 +51,8 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 512 training dataset and 128 test dataset. Trained on the resolution with 64$\times$64. The test error on 128 test dataset is 8.0658.
 
+epoch: ~500
+
 ![wave](figure/wave.png)
 
 
