@@ -28,22 +28,28 @@ We only use 150 training data to train the model. 50 data to test the model. We 
 
 In this experiment, we discussed the a prototypical *linear hyperbolic PDE*, given as follows:
 $$
+\begin{align}
 u_tt-c^2\Delta u=0,\ \text{in}\ D\times(0,T), u_0(x,y)=f(x,y)
+\end{align}
 $$
 If the initial condition has following forms:
 $$
+\begin{align}
 f(x,y)=\frac{\pi}{K^2}\sum^K_{i,j=1}a_{ij}\cdot(i^2+j^2)^{-r}\sin(\pi ix)\sin(\pi jy)
+\end{align}
 $$
 
 With $K=24$ and $r=1$. The exact solution at time $t>0$ is given by
 $$
+\begin{align}
 u(x,y,t)=\frac{\pi}{K^2}\sum^K_{i,j=1}a_{ij}\cdot(i^2+j^2)^{-r}\sin(\pi ix)\sin(\pi jy)\cos(c\pi t\sqrt{i^2+j^2}),\ \forall(x,y)\in D
+\end{align}
 $$
 speed of propagation $c=0.1$. **The objective is to approximate the operator**  $\cal{G}^\dagger:f\rightarrow$ $u(\cdot, T=5)$
 
 ### Training Process
 
-See
+512 training dataset and 128 test dataset. Trained on the resolution with 64$\times$64. The test error on 128 test dataset is 8.0658.
 
 ![wave](figure/wave.png)
 
