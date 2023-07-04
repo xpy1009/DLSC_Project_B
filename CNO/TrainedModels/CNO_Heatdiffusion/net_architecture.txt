@@ -1,0 +1,13 @@
+N_layers,6.0
+kernel_size,3.0
+channel_multiplier,32.0
+N_res,6.0
+res_len,2.0
+in_size,64.0
+retrain,4.0
+cutoff_den,2.0001
+lrelu_upsampling,2.0
+half_width_mult,1.0
+filter_size,6.0
+radial_filter,0.0
+FourierF,0.0
