@@ -3,6 +3,16 @@ Neural Operators and Operator Networks vs Parametric Approach
 
 Trainging dataset and pretrained model can be download from: [Google Drive](https://drive.google.com/drive/folders/10Gd3MewuWOAPsbBuI_5wk7qZVkuQ1sbj?usp=sharing)
 
+Download dataset
+```shell
+pip install gdown
+gdown --folder https://drive.google.com/drive/folders/1JF-n7P4qDN5yavN5mYIzkenFlO-_1LeX
+```
+
+Download pretrained model
+```shell
+gdown --folder https://drive.google.com/drive/folders/1bU_hRzUepsdoHk_DGk7zLfVnYJ4Jsl5E
+```
 ## Heat Diffusion
 ### Problem Description
 
@@ -27,24 +37,15 @@ We only use 150 training data to train the model. 50 data to test the model. We 
 ### Problem Description
 
 In this experiment, we discussed the a prototypical *linear hyperbolic PDE*, given as follows:
-$$
-\begin{align}
-u_tt-c^2\Delta u=0,\ \text{in}\ D\times(0,T), u_0(x,y)=f(x,y)
-\end{align}
-$$
+$$ u_tt-c^2\Delta u=0,\ \text{in}\ D\times(0,T), u_0(x,y)=f(x,y)$$
 If the initial condition has following forms:
-$$
-\begin{align}
-f(x,y)=\frac{\pi}{K^2}\sum^K_{i,j=1}a_{ij}\cdot(i^2+j^2)^{-r}\sin(\pi ix)\sin(\pi jy)
-\end{align}
-$$
+
+$$f(x,y)=\frac{\pi}{K^2}\sum^K_{i,j=1}a_{ij}\cdot(i^2+j^2)^{-r}\sin(\pi ix)\sin(\pi jy)$$
 
 With $K=24$ and $r=1$. The exact solution at time $t>0$ is given by
-$$
-\begin{align}
-u(x,y,t)=\frac{\pi}{K^2}\sum^K_{i,j=1}a_{ij}\cdot(i^2+j^2)^{-r}\sin(\pi ix)\sin(\pi jy)\cos(c\pi t\sqrt{i^2+j^2}),\ \forall(x,y)\in D
-\end{align}
-$$
+
+$$u(x,y,t)=\frac{\pi}{K^2}\sum^K_{i,j=1}a_{ij}\cdot(i^2+j^2)^{-r}\sin(\pi ix)\sin(\pi jy)\cos(c\pi t\sqrt{i^2+j^2}),\ \forall(x,y)\in D$$
+
 speed of propagation $c=0.1$. **The objective is to approximate the operator**  $\cal{G}^\dagger:f\rightarrow$ $u(\cdot, T=5)$
 
 ### Training Process

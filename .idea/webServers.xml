@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="7c337c25-43fb-4dab-b230-13b72debc56b" name="RUC">
+        <fileTransfer accessType="SFTP" host="129.10.99.214" port="22" sshConfigId="68e4b57b-7a54-4ac0-95b1-b90daa8446fc" sshConfig="shizhengwen@129.10.99.214:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
