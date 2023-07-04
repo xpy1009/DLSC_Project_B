@@ -37,7 +37,7 @@ We only use 150 training data to train the model. 50 data to test the model. We 
 ### Problem Description
 
 In this experiment, we discussed the a prototypical *linear hyperbolic PDE*, given as follows:
-$$ u_tt-c^2\Delta u=0,\ \text{in}\ D\times(0,T), u_0(x,y)=f(x,y)$$
+$$u_tt-c^2\Delta u=0,\ \text{in}\ D\times(0,T), u_0(x,y)=f(x,y)$$
 If the initial condition has following forms:
 
 $$f(x,y)=\frac{\pi}{K^2}\sum^K_{i,j=1}a_{ij}\cdot(i^2+j^2)^{-r}\sin(\pi ix)\sin(\pi jy)$$
