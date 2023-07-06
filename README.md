@@ -30,7 +30,7 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 ### Results
 
-![diffusion](figure/Diffusion_compare.png)
+![diffusion](assets/Diffusion_compare.png)
 
 - The dataset was generated with $d=6$ with resolution $64 \times 64$.
 - For FNO and CNO, we used the same dataset with 150 training points and 50 test points.
@@ -50,7 +50,7 @@ Further more, we test the resolution invariance of FNO for different $d$. Simila
 
 - We show figure of the resolution invariance for $d=6$.
 
-![diffusion](figure/diffusion.png)
+![diffusion](assets/diffusion.png)
 
 - It can be imagined that the effect of alising will become serious with increasing $d$。
 - In this problem, we didn't see the distinguished alising effect. We believed it may be a very easy task.
@@ -73,7 +73,7 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 ### Results
 
-![wave_compare](figure/wave_compare.png)
+![wave_compare](assets/wave_compare.png)
 
 - 512 training dataset and 128 test dataset. Trained on the resolution with $64\times 64$. The test error of FNO on 128 test dataset is 8.0658 (~ 500 epochs). The error of CNO on 128 test dataset is 11.7288 (~ 400 epochs).
 
