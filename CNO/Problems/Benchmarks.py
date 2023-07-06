@@ -443,7 +443,7 @@ class WaveEquationDataset(Dataset):
 
 
 class WaveEquation:
-    def __init__(self, network_properties, device, batch_size, training_samples = 1024, s = 64, in_dist = True):
+    def __init__(self, network_properties, device, batch_size, res, data_path_input, data_path_output, training_samples = 1024, s = 64, in_dist = True):
         #Must have parameters: ------------------------------------------------        
 
         if "in_size" in network_properties:
@@ -499,10 +499,30 @@ class WaveEquation:
 
         #Change number of workers accoirding to your preference
         num_workers = 16
-        
-        self.train_loader = DataLoader(WaveEquationDataset("training", self.N_Fourier_F, training_samples, 5, s), batch_size=batch_size, shuffle=True, num_workers=num_workers)
-        self.val_loader = DataLoader(WaveEquationDataset("validation", self.N_Fourier_F, training_samples, 5, s), batch_size=batch_size, shuffle=False, num_workers=num_workers)
-        self.test_loader = DataLoader(WaveEquationDataset("test", self.N_Fourier_F, training_samples, 5, s, in_dist), batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
+        n_train = 512
+        n_test = 128
+        u_0 = torch.from_numpy(np.load(data_path_input).reshape(n_train + n_test, res, res, 3))[:,:,:,0].reshape(n_train + n_test,1,res,res).float()
+        u_T = torch.from_numpy(np.load(data_path_output).reshape(n_train + n_test, res, res, 1))[:,:,:,0].reshape(n_train + n_test,1,res,res).float()
+
+        # scale data with normalization
+        self.min_vals_input = u_0[0:n_train, :, :, :].min()
+        self.max_vals_input = u_0[0:n_train, :, :, :].max()
+        self.min_vals_output = u_T[0:n_train, :, :, :].min()
+        self.max_vals_output = u_T[0:n_train, :, :, :].max()
+
+        tr_inputs = (u_0[0:n_train, :, :, :] - self.min_vals_input) / (self.max_vals_input - self.min_vals_input)
+        tr_label = (u_T[0:n_train, :, :, :] - self.min_vals_output) / (self.max_vals_output - self.min_vals_output)
+        ts_inputs = (u_0[n_train:, :, :, :] - self.min_vals_input) / (self.max_vals_input - self.min_vals_input)
+        ts_label = (u_T[n_train:, :, :, :] - self.min_vals_output) / (self.max_vals_output - self.min_vals_output)
+
+        self.train_loader = DataLoader(TensorDataset(tr_inputs, tr_label), batch_size=batch_size, shuffle=True)
+        self.val_loader = DataLoader(TensorDataset(ts_inputs, ts_label), batch_size=50, shuffle=False)
+        self.test_loader = DataLoader(TensorDataset(ts_inputs, ts_label), batch_size=50, shuffle=False)
+
+        # self.train_loader = DataLoader(WaveEquationDataset("training", self.N_Fourier_F, training_samples, 5, s), batch_size=batch_size, shuffle=True, num_workers=num_workers)
+        # self.val_loader = DataLoader(WaveEquationDataset("validation", self.N_Fourier_F, training_samples, 5, s), batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        # self.test_loader = DataLoader(WaveEquationDataset("test", self.N_Fourier_F, training_samples, 5, s, in_dist), batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
@@ -1017,7 +1037,7 @@ class Airfoil:
         self.test_loader = DataLoader(AirfoilDataset("test", self.N_Fourier_F, training_samples, s, in_dist), batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
 class Heatdiffusion:
-    def __init__(self, network_properties, device, batch_size, training_samples=512, s=128, in_dist=True):
+    def __init__(self, network_properties, device, batch_size, res, data_path_input, data_path_output, training_samples=512, s=128, in_dist=True):
         # Must have parameters: ------------------------------------------------
 
         if "in_size" in network_properties:
@@ -1073,23 +1093,23 @@ class Heatdiffusion:
         num_workers = 4
 
         n_train = 150
-        u_0 = torch.from_numpy(np.load('../Dataset/diffusion/64_64/u0s_d1.npy').reshape(200, 64, 64, 3))[:,:,:,0].reshape(200,1,64,64).float()
-        u_T = torch.from_numpy(np.load('../Dataset/diffusion/64_64/uTs_d1.npy').reshape(200, 64, 64, 1))[:,:,:,0].reshape(200,1,64,64).float()
+        u_0 = torch.from_numpy(np.load(data_path_input).reshape(200, res, res, 3))[:,:,:,0].reshape(200,1,res,res).float()
+        u_T = torch.from_numpy(np.load(data_path_output).reshape(200, res, res, 1))[:,:,:,0].reshape(200,1,res,res).float()
 
         # scale data with normalization
-        min_vals_input = u_0[0:n_train, :, :, :].min()
-        max_vals_input = u_0[0:n_train, :, :, :].max()
-        min_vals_output = u_T[0:n_train, :, :, :].min()
-        max_vals_output = u_T[0:n_train, :, :, :].max()
+        self.min_vals_input = u_0[0:n_train, :, :, :].min()
+        self.max_vals_input = u_0[0:n_train, :, :, :].max()
+        self.min_vals_output = u_T[0:n_train, :, :, :].min()
+        self.max_vals_output = u_T[0:n_train, :, :, :].max()
 
-        tr_inputs = (u_0[0:n_train, :, :, :] - min_vals_input) / (max_vals_input - min_vals_input)
-        tr_label = (u_T[0:n_train, :, :, :] - min_vals_output) / (max_vals_output - min_vals_output)
-        ts_inputs = (u_0[n_train:, :, :, :] - min_vals_input) / (max_vals_input - min_vals_input)
-        ts_label = (u_T[n_train:, :, :, :] - min_vals_output) / (max_vals_output - min_vals_output)
+        tr_inputs = (u_0[0:n_train, :, :, :] - self.min_vals_input) / (self.max_vals_input - self.min_vals_input)
+        tr_label = (u_T[0:n_train, :, :, :] - self.min_vals_output) / (self.max_vals_output - self.min_vals_output)
+        ts_inputs = (u_0[n_train:, :, :, :] - self.min_vals_input) / (self.max_vals_input - self.min_vals_input)
+        ts_label = (u_T[n_train:, :, :, :] - self.min_vals_output) / (self.max_vals_output - self.min_vals_output)
 
-        self.train_loader = DataLoader(TensorDataset(u_0[0:n_train, :], u_T[0:n_train, :]), batch_size=batch_size, shuffle=True)
-
-        self.val_loader = DataLoader(TensorDataset(u_0[n_train:, :], u_T[n_train:, :]), batch_size=50, shuffle=False)
+        self.train_loader = DataLoader(TensorDataset(tr_inputs, tr_label), batch_size=batch_size, shuffle=True)
+        self.val_loader = DataLoader(TensorDataset(ts_inputs, ts_label), batch_size=50, shuffle=False)
+        self.test_loader = DataLoader(TensorDataset(ts_inputs, ts_label), batch_size=50, shuffle=False)
 
 
 #        self.test_loader = DataLoader(AirfoilDataset("test", self.N_Fourier_F, training_samples, s, in_dist), batch_size=batch_size, shuffle=False, num_workers=num_workers)
