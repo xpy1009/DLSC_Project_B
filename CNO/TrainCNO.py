@@ -8,18 +8,19 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
+
 from Problems.Benchmarks import Airfoil, DiscContTranslation, ContTranslation, AllenCahn, SinFrequency, WaveEquation, ShearLayer, Heatdiffusion
 
 if len(sys.argv) == 1:
 
     training_properties = {
-        "learning_rate": 0.0005, 
+        "learning_rate": 0.0001,
         "weight_decay": 1e-10,
-        "scheduler_step": 10,
-        "scheduler_gamma": 0.98,
-        "epochs": 100,
+        "scheduler_step": 30,
+        "scheduler_gamma": 0.95,
+        "epochs": 1000,
         "batch_size": 16,
-        "exp": 2, #Do we use L1 or L2 errors? Default: L1
+        "exp": 1, #Do we use L1 or L2 errors? Default: L1
         "training_samples": 150, #How many training samples?
     }
     model_architecture_ = {
@@ -70,7 +71,7 @@ if len(sys.argv) == 1:
     which_example = "Heatdiffusion"
 
     # Save the models here:
-    folder = "TrainedModels/"+"CNO_"+which_example
+    folder = "/mnt/shizhengwen/TrainedModels/"+"CNO_"+which_example
         
 else:
     
@@ -79,6 +80,33 @@ else:
     training_properties = json.loads(sys.argv[2].replace("\'", "\""))
     model_architecture_ = json.loads(sys.argv[3].replace("\'", "\""))
     which_example = sys.argv[4]
+
+#-------------------Load Model---------------------#
+def save_checkpoint(model, optimizer, scheduler, save_dir):
+    '''save model and optimizer'''
+
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'scheduler_state_dict': scheduler.state_dict()
+    }, save_dir)
+
+
+def load_checkpoint(model, optimizer, scheduler, save_dir, switch=1):
+    '''load model and optimizer'''
+
+    checkpoint = torch.load(save_dir)
+    model.load_state_dict(checkpoint['model_state_dict'])
+
+    if switch:
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        print('preobtimizer loaded!')
+
+    print('Pretrained model loaded!')
+
+    return model, optimizer, scheduler
+#----------------------------------------------------------
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 writer = SummaryWriter(log_dir=folder) #usage of TensorBoard
@@ -101,6 +129,11 @@ df.to_csv(folder + '/training_properties.txt', header=False, index=True, mode='w
 df = pd.DataFrame.from_dict([model_architecture_]).T
 df.to_csv(folder + '/net_architecture.txt', header=False, index=True, mode='w')
 
+res = 64
+data_path_input = '/mnt/shizhengwen/Dataset/diffusion/64_64/u0s_d6.npy'
+data_path_output = '/mnt/shizhengwen/Dataset/diffusion/64_64/uTs_d6.npy'
+
+
 if which_example == "shear_layer":
     example = ShearLayer(model_architecture_, device, batch_size, training_samples)
 elif which_example == "poisson":
@@ -116,7 +149,7 @@ elif which_example == "disc_tran":
 elif which_example == "airfoil":
     example = Airfoil(model_architecture_, device, batch_size, training_samples)
 elif which_example == "Heatdiffusion":
-    example = Heatdiffusion(model_architecture_, device, batch_size, training_samples, 64)
+    example = Heatdiffusion(model_architecture_, device, batch_size,res, data_path_input, data_path_output, training_samples, 64)
 else:
     raise ValueError()
 
@@ -207,7 +240,9 @@ for epoch in range(epochs):
             if test_relative_l2 < best_model_testing_error:
                 best_model_testing_error = test_relative_l2
                 best_model = copy.deepcopy(model)
-                torch.save(best_model, folder + "/model.pkl")
+                save_checkpoint(best_model, optimizer, scheduler, folder + "/CN0_d6_checkpoint1000.pt")
+                print('successfully save the model')
+#                torch.save(best_model, folder + "/model.pkl")
                 writer.add_scalar("val_loss/Best Relative Testing Error", best_model_testing_error, epoch)
                 counter = 0
             else:

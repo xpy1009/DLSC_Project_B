@@ -121,7 +121,7 @@ from torch_utils.ops import conv2d_gradfix
 from torch_utils.ops import filtered_lrelu
 from torch_utils.ops import bias_act
 
-import torch.nn.utils.parametrize as parametrize
+#import torch.nn.utils.parametrize as parametrize
 import torch.nn as nn
 import torch.nn.functional as F
 
