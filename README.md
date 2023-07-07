@@ -30,18 +30,18 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 ### Results
 #### DeepONet
-- The branch net is chosen as a fully connected neural network of size [$res \times res$, 40, 40], and the trunk net is a fully connected neural network of size [2, 40, 40]
+- The branch net is chosen as a fully connected neural network of size $ [res \times res, 40, 40] $, and the trunk net is a fully connected neural network of size [2, 40, 40]
 - The model was trained with Adam and learning rate 0.001 for 10000 iterations
 - It was trained and tested on the dataset with resolution $64 \times 64$, which is normalized based on its mean value and standard deviation during training.
 
 | d | Comparison | Loss Plot | Mean l2 relative error |
 | :------------------: |:------------------: |:------------------: |:------------------: |
-| d=1 | <img align="center"  src="./assets/DON/diffusion/res_d1.png" height="300"> | <img align="center"  src="./assets/DON/diffusion/loss_d1.png" height="300"> | 4.7107 |
-| d=2 | <img align="center"  src="./assets/DON/diffusion/res_d2.png" height="300"> | <img align="center"  src="./assets/DON/diffusion/loss_d2.png" height="300"> | 2.4742 |
-| d=3 | <img align="center"  src="./assets/DON/diffusion/res_d3.png" height="300"> | <img align="center"  src="./assets/DON/diffusion/loss_d3.png" height="300"> | 2.5499 |
-| d=4 | <img align="center"  src="./assets/DON/diffusion/res_d4.png" height="300"> | <img align="center"  src="./assets/DON/diffusion/loss_d4.png" height="300"> | 1.9887 |
-| d=5 | <img align="center"  src="./assets/DON/diffusion/res_d5.png" height="300"> | <img align="center"  src="./assets/DON/diffusion/loss_d5.png" height="300"> | 2.7945 |
-| d=6 | <img align="center"  src="./assets/DON/diffusion/res_d6.png" height="300"> | <img align="center"  src="./assets/DON/diffusion/loss_d6.png" height="300"> | 2.3586 |
+| d=1 | <img align="center"  src="./assets/DON/diffusion/res_d1.png"> | <img align="center"  src="./assets/DON/diffusion/loss_d1.png"> | 4.7107 |
+| d=2 | <img align="center"  src="./assets/DON/diffusion/res_d2.png"> | <img align="center"  src="./assets/DON/diffusion/loss_d2.png"> | 2.4742 |
+| d=3 | <img align="center"  src="./assets/DON/diffusion/res_d3.png"> | <img align="center"  src="./assets/DON/diffusion/loss_d3.png"> | 2.5499 |
+| d=4 | <img align="center"  src="./assets/DON/diffusion/res_d4.png"> | <img align="center"  src="./assets/DON/diffusion/loss_d4.png"> | 1.9887 |
+| d=5 | <img align="center"  src="./assets/DON/diffusion/res_d5.png"> | <img align="center"  src="./assets/DON/diffusion/loss_d5.png"> | 2.7945 |
+| d=6 | <img align="center"  src="./assets/DON/diffusion/res_d6.png"> | <img align="center"  src="./assets/DON/diffusion/loss_d6.png"> | 2.3586 |
 
 #### FNO and CNO
 
@@ -94,7 +94,7 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 | Comparison | Loss Plot | Mean l2 relative error |
 |:------------------: |:------------------: |:------------------: |
-| <img align="center"  src="./assets/DON/wave/res_d1.png" height="300"> | <img align="center"  src="./assets/DON/wave/loss_d1.png" height="300"> | 26.309 |
+| <img align="center"  src="./assets/DON/wave/res_d1.png"> | <img align="center"  src="./assets/DON/wave/loss_d1.png"> | 26.309 |
 
 - Increasing the number of layers of the network helps a little bit, but not much. 
 - After around 6000 iterations, there is not much improvement.
