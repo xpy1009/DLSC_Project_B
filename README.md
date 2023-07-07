@@ -30,7 +30,7 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 ### Results
 #### DeepONet
-- The branch net is chosen as a fully connected neural network of size $ [res \times res, 40, 40] $, and the trunk net is a fully connected neural network of size [2, 40, 40]
+- The branch net is chosen as a fully connected neural network of size $[res \times res, 40, 40]$, and the trunk net is a fully connected neural network of size [2, 40, 40]
 - The model was trained with Adam and learning rate 0.001 for 10000 iterations
 - It was trained and tested on the dataset with resolution $64 \times 64$, which is normalized based on its mean value and standard deviation during training.
 
@@ -88,7 +88,7 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 ### Results
 #### DeepONet
-- The branch net is chosen as a fully connected neural network of size [$res \times res$, 80, 80], and the trunk net is a fully connected neural network of size [2, 80, 80]
+- The branch net is chosen as a fully connected neural network of size $[res \times res, 80, 80]$, and the trunk net is a fully connected neural network of size [2, 80, 80]
 - The model was trained with Adam and learning rate 0.001 for 10000 iterations
 - It was trained and tested on the dataset with resolution $64 \times 64$, which is normalized in the same way as for heat equation.
 
