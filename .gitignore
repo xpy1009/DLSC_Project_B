@@ -1,0 +1,4 @@
+dlsc/
+__pycache__/
+*.png
+Dataset/
