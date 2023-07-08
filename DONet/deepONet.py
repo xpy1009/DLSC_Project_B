@@ -2,79 +2,116 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import deepxde as dde
-from Data import initial_condition, final_value, convert
+import argparse
 
-np.random.seed(7)
-torch.manual_seed(128)
+parser = argparse.ArgumentParser(description='For choosing the equation and dimension.')
+parser.add_argument('-e')
 
-n_x = 8192
-d = 6
-T = 0.1
-domain_extrema = torch.tensor([[-1, 1], [-1, 1]]) # x in [-1, 1]^2
-soboleng = torch.quasirandom.SobolEngine(dimension=domain_extrema.shape[0])
-input_x = convert(soboleng.draw(n_x), domain_extrema).numpy()
+args = parser.parse_args()
 
-train_size = 100
-test_size = 100
-d_size = train_size + test_size
-u0s = np.empty([d_size, n_x])
-uTs = np.empty([d_size, n_x])
+if (args.e == 'diffusion'): 
+  n_train =150
+  n_test = 50
+  n_d = 6
+elif (args.e == 'wave'):
+  n_train = 512
+  n_test = 128
+  n_d = 1
+else:
+  print(args.e + " not implemented")
+  exit(0)
+losses = np.empty([n_d])
 
-for i in range(d_size):
-  mu = np.random.uniform(-1, 1, d)
-  u_0 = initial_condition(input_x, mu)
-  u_T = final_value(input_x, mu, T)
-  u0s[i, :] = u_0
-  uTs[i, :] = u_T
+for d in range(n_d):
+  np.random.seed(0)
+  torch.manual_seed(0)
+  if (n_d>1): 
+    u_0 = np.load('Dataset/' + args.e + '/64_64/u0s_d' + str(d+1) + '.npy')
+    u_T = np.load('Dataset/' + args.e + '/64_64/uTs_d' + str(d+1) + '.npy')
+  else:
+    u_0 = np.load('Dataset/' + args.e + '/64_64/u0s_K24.npy')
+    u_T = np.load('Dataset/' + args.e + '/64_64/uTs_K24.npy')
 
-X_train = (u0s[:train_size, :].astype(np.float32), input_x.astype(np.float32))
-y_train = uTs[:train_size, :].astype(np.float32)
+  # print(u_0.shape)
+  # print(u_T.shape)
+  # assert(0)
 
-X_test = (u0s[train_size:, :].astype(np.float32), input_x.astype(np.float32))
-y_test = uTs[train_size:, :].astype(np.float32)
+  input_x = u_0[0, :, :, 1:].reshape(-1, 2)
 
-data = dde.data.TripleCartesianProd(
-    X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test
-)
+  # normalize data
+  mean_in = u_0[:n_train,:,:,0].mean()
+  std_in = u_0[:n_train,:,:,0].std()
+  mean_out = u_T[:n_train,:,:].mean()
+  std_out = u_T[:n_train,:,:].std()
 
-m = n_x
-dim_x = 2
-net = dde.nn.DeepONetCartesianProd(
-    [m, 40, 40],
-    [dim_x, 40, 40],
-    "relu",
-    "Glorot normal",
-)
+  tr_inputs = (u_0[:n_train,:,:,0].reshape(n_train, -1) - mean_in) / std_in
+  tr_label = (u_T[:n_train,:,:].reshape(n_train, -1) - mean_out) / std_out
+  ts_inputs = (u_0[n_train:,:,:,0].reshape(n_test, -1) - mean_in) / std_in
+  ts_label = (u_T[n_train:,:,:].reshape(n_test, -1) - mean_out) / std_out
 
-# Define a Model
-model = dde.Model(data, net)
+  # print(tr_inputs.shape, tr_label.shape)
+  # assert(0)
 
-# Compile and train.
-model.compile("adam", lr=0.001, metrics=["mean l2 relative error"])
-losshistory, train_state = model.train(iterations=10000)
+  # build dataset
+  X_train = (tr_inputs.astype(np.float32), input_x.astype(np.float32))
+  y_train = tr_label.astype(np.float32)
+  X_test = (ts_inputs.astype(np.float32), input_x.astype(np.float32))
+  y_test = ts_label.astype(np.float32)
+  data = dde.data.TripleCartesianProd(
+      X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test
+  )
 
-# Plot the loss trajectory
-dde.utils.plot_loss_history(losshistory)
-plt.savefig('loss.png', dpi=150)
+  # print(X_test[0].shape, X_test[1].shape, y_test.shape)
+  # assert(0)
 
-mu = np.random.uniform(-1, 1, d)
-u_0 = initial_condition(input_x, mu).numpy()
-u_T = final_value(input_x, mu, T).numpy()
-X_eval = (u_0.reshape(1,-1).astype(np.float32), input_x.astype(np.float32))
-pred = model.predict(X_eval).flatten()
-print("MSE loss:", np.mean(np.square((pred-u_T))))
+  # choose network
+  m = input_x.shape[0]
+  dim_x = 2
+  if (n_d>1):
+    layers = 40
+  else:
+    layers = 80
+  net = dde.nn.DeepONetCartesianProd(
+      [m, layers, layers],
+      [dim_x, layers, layers],
+      "relu",
+      "Glorot normal",
+  )
+  # print(net)
+  # assert(0)
 
-fig, axs = plt.subplots(1, 2, figsize=(16, 8), dpi=150)
-im1 = axs[0].scatter(input_x[:, 1], input_x[:, 0], c=pred, cmap="jet")
-axs[0].set_xlabel("x1")
-axs[0].set_ylabel("x2")
-plt.colorbar(im1, ax=axs[0])
-axs[0].grid(True, which="both", ls=":")
-axs[0].set_title("pred")
-im2 = axs[1].scatter(input_x[:, 1], input_x[:, 0], c=u_T, cmap="jet")
-axs[1].set_xlabel("x1")
-axs[1].set_ylabel("x2")
-plt.colorbar(im2, ax=axs[1])
-axs[1].grid(True, which="both", ls=":")
-axs[1].set_title("ground truth")
-plt.savefig('res.png', dpi=150)
+  # Define a Model
+  model = dde.Model(data, net)
+
+  # Compile and train.
+  model.compile("adam", lr=0.001, metrics=["mean l2 relative error"])
+  losshistory, train_state = model.train(iterations=10000)
+
+  # Plot the loss trajectory
+  dde.utils.plot_loss_history(losshistory)
+  plt.savefig('assets/DON/' + args.e + '/loss_d' + str(d+1) + '.png', dpi=150)
+
+  # test model
+  pred = model.predict(X_test)
+  pred = pred * std_out + mean_out
+  gt = y_test * std_out + mean_out
+  err = (np.mean((pred - gt)**2) / np.mean(gt**2))**0.5 * 100
+  losses[d] = err
+
+  # visualize results
+  fig, axs = plt.subplots(1, 2, figsize=(16, 8), dpi=150)
+  im1 = axs[0].scatter(input_x[:, 1], input_x[:, 0], c=pred[0,:], cmap="jet")
+  axs[0].set_xlabel("x1")
+  axs[0].set_ylabel("x2")
+  plt.colorbar(im1, ax=axs[0])
+  axs[0].grid(True, which="both", ls=":")
+  axs[0].set_title("pred")
+  im2 = axs[1].scatter(input_x[:, 1], input_x[:, 0], c=gt[0,:], cmap="jet")
+  axs[1].set_xlabel("x1")
+  axs[1].set_ylabel("x2")
+  plt.colorbar(im2, ax=axs[1])
+  axs[1].grid(True, which="both", ls=":")
+  axs[1].set_title("ground truth")
+  plt.savefig('assets/DON/' + args.e + '/res_d' + str(d+1) + '.png', dpi=150)
+
+print("MSE Losses:", losses)
