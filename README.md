@@ -29,6 +29,22 @@ with the initial condition
 speed of propagation $c=0.1$. **The objective is to approximate the operator**  $\cal{G}^\dagger:f\rightarrow$ $u(\cdot, T=5)$
 
 ### Results
+#### MLP
+- A feedforward 4-layer multilayer perceptron with 150 neurons in each layer is chosen for the experiment
+- The model was trained with Adam optimizer with a learning rate of 0.001 for 400-700 iterations
+- The model was trained and tested on the dataset of size 150 and 50 respectively with resolution $64 \times 64$
+
+| d | Comparison | Mean l2 relative error |
+| :------------------: |:------------------: |:------------------: |
+| d=1 | <img align="center"  src="./assets/MLP/heat/res_MLP_64_1.png"> | 6.7095 |
+| d=2 | <img align="center"  src="./assets/MLP/heat/res_MLP_64_2.png"> | 8.7627 |
+| d=3 | <img align="center"  src="./assets/MLP/heat/res_MLP_64_3.png"> | 11.4965 |
+| d=4 | <img align="center"  src="./assets/MLP/heat/res_MLP_64_4.png"> | 16.0574 |
+| d=5 | <img align="center"  src="./assets/MLP/heat/res_MLP_64_5.png"> | 42.6141 |
+| d=6 | <img align="center"  src="./assets/MLP/heat/res_MLP_64_6.png"> | 79.6393 |
+
+- We observe a fast drop of the performances of the model with increasing problem complexity as expected
+
 #### DeepONet
 - The branch net is chosen as a fully connected neural network of size $[res \times res, 40, 40]$, and the trunk net is a fully connected neural network of size [2, 40, 40]
 - The model was trained with Adam and learning rate 0.001 for 10000 iterations
