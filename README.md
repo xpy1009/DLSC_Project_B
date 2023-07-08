@@ -43,6 +43,15 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 | d=5 | <img align="center"  src="./assets/MLP/heat/res_MLP_64_5.png"> | 42.6141 |
 | d=6 | <img align="center"  src="./assets/MLP/heat/res_MLP_64_6.png"> | 79.6393 |
 
+The following table shows the mean L2 relative error tested on different grid resolutions using the trained models
+
+| resolution/d | 1      | 2      | 3      | 4      | 5      | 6      |
+| ------------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| 32           | 7.1805 | 9.1301 | 11.9038 | 16.6792 | 44.4914 | 80.9182 |
+| 64           | 6.7095 | 8.7627 | 11.4965 | 16.0574 | 42.6141 | 79.6393 |
+| 96           | 6.5696 | 8.6518 | 11.3748 | 15.8683 | 42.0200 | 79.2477 |
+| 128          | 6.5024 | 8.5987 | 11.3161 | 15.7774 | 41.7287 | 79.0583 |
+
 - We observe a fast drop of the performances of the model with increasing problem complexity as expected
 
 #### DeepONet
