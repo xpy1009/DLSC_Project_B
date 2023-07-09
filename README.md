@@ -112,6 +112,17 @@ $$u(x,y,t)=\frac{\pi}{K^2}\sum^K_{i,j=1}a_{ij}\cdot(i^2+j^2)^{-r}\sin(\pi ix)\si
 speed of propagation $c=0.1$. **The objective is to approximate the operator**  $\cal{G}^\dagger:f\rightarrow$ $u(\cdot, T=5)$
 
 ### Results
+#### MLP
+- A feedforward 5-layer multilayer perceptron with 250 neurons in each layer is chosen for the experiment
+- The model was trained with Adam optimizer with a learning rate of 0.001 for 200 iterations
+- The model was trained and tested on the dataset of size 512 and 128 respectively with resolution $64 \times 64$
+
+| Comparison | Loss Plot | Mean l2 relative error |
+|:------------------:|:------------------: |:------------------:|
+| <img align="center"  src="./assets/MLP/wave/res_MLP_wave_64_24.png"> | <img align="center"  src="./assets/MLP/wave/loss_MLP_64_24.png">| 83.7726 |
+
+- The model doesn't improve after 80 epochs of training.
+  
 #### DeepONet
 - The branch net is chosen as a fully connected neural network of size $[res \times res, 80, 80]$, and the trunk net is a fully connected neural network of size [2, 80, 80]
 - The model was trained with Adam and learning rate 0.001 for 10000 iterations
