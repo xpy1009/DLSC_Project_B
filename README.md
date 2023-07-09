@@ -68,6 +68,14 @@ The following table shows the mean L2 relative error tested on different grid re
 | d=5 | <img align="center"  src="./assets/DON/diffusion/res_d5.png"> | <img align="center"  src="./assets/DON/diffusion/loss_d5.png"> | 2.7945 |
 | d=6 | <img align="center"  src="./assets/DON/diffusion/res_d6.png"> | <img align="center"  src="./assets/DON/diffusion/loss_d6.png"> | 2.3586 |
 
+| resolution\d | 1      | 2      | 3      | 4      | 5      | 6      |
+| ------------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| 32           | 6.9410 | 4.7216 | 4.2353 | 4.8877 | 6.2910 | 5.4723 |
+| 64           | 4.7107 | 2.4742 | 2.5500 | 1.9887 | 2.7945 | 2.3586 |
+| 96           | 4.4996 | 2.4901 | 2.8338 | 2.3045 | 2.7332 | 2.7789 |
+| 128          | 4.3792 | 2.5635 | 2.9984 | 2.4686 | 2.6130 | 2.8031 |
+
+
 #### FNO and CNO
 
 ![diffusion](assets/Diffusion_compare.png)
