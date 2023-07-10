@@ -118,7 +118,7 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 ### Results
 
-![wave_compare](assets/waveK24.png)
+![waveK24](assets/WaveK24.png)
 
 #### FNO and CNO
 
