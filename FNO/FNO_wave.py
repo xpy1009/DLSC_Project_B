@@ -166,18 +166,19 @@ class FNO2d(nn.Module):
 
 torch.manual_seed(0)
 np.random.seed(0)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Define tensorboard class
-writer = SummaryWriter(log_dir="Train_History/Wave_K24")
+writer = SummaryWriter(log_dir="Train_History/Wave_K1")
 tags = ["train_loss", "data_error", "learning_rate"]
 
-pre_model_save_path = './model/Wave/FN0_K24_checkpoint500.pt'
-save_path = './model/Wave/FN0_K24_checkpoint1000.pt'
+pre_model_save_path = None
+save_path = '/mnt/shizhengwen/TrainedModels/FNO_wave/FN0_K1_checkpoint1000.pt'
 
 n_train = 512
 n_test = 128
-u_0 = torch.from_numpy(np.load('../Dataset/wave/64_64/u0s_K24.npy').reshape(n_train + n_test, 64, 64, 3)).float()
-u_T = torch.from_numpy(np.load('../Dataset/wave/64_64/uTs_K24.npy').reshape(n_train + n_test, 64, 64, 1)).float()
+u_0 = torch.from_numpy(np.load('/mnt/shizhengwen/Dataset/Wave/64_64/u0s_K1.npy').reshape(n_train + n_test, 64, 64, 3)).float()
+u_T = torch.from_numpy(np.load('/mnt/shizhengwen/Dataset/Wave/64_64/uTs_K1.npy').reshape(n_train + n_test, 64, 64, 1)).float()
 print(u_0.shape)
 print(u_T.shape)
 
@@ -210,7 +211,7 @@ fno_architectures = {
     "n_layers": 4,
     "retrain_fno": 100
 }
-fno = FNO2d(fno_architectures)
+fno = FNO2d(fno_architectures, device)
 optimizer = Adam(fno.parameters(), lr=learning_rate, weight_decay=1e-8)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
@@ -228,6 +229,8 @@ for epoch in range(epochs):
     train_mse = 0.0
     for step, (input_batch, output_batch) in enumerate(training_set):
         optimizer.zero_grad()
+        input_batch = input_batch.to(device)
+        output_batch = output_batch.to(device)
         output_pred_batch = fno(input_batch).squeeze(2)
         loss_f = l(output_pred_batch, output_batch)
         loss_f.backward()
@@ -240,6 +243,8 @@ for epoch in range(epochs):
         fno.eval()
         test_relative_l2 = 0.0
         for step, (input_batch, output_batch) in enumerate(testing_set):
+            input_batch = input_batch.to(device)
+            output_batch = output_batch.to(device)
             output_pred_batch = fno(input_batch).squeeze(2)
             loss_f = (torch.mean((output_pred_batch - output_batch) ** 2) / torch.mean(output_batch ** 2)) ** 0.5 * 100
             test_relative_l2 += loss_f.item()

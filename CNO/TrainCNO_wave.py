@@ -7,13 +7,14 @@ import pandas as pd
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+import time
 
 from Problems.Benchmarks import Airfoil, DiscContTranslation, ContTranslation, AllenCahn, SinFrequency, WaveEquation, ShearLayer, Heatdiffusion
 
 if len(sys.argv) == 1:
 
     training_properties = {
-        "learning_rate": 0.001,
+        "learning_rate": 0.0001,
         "weight_decay": 1e-10,
         "scheduler_step": 30,
         "scheduler_gamma": 0.95,
@@ -70,7 +71,7 @@ if len(sys.argv) == 1:
     which_example = "wave_0_5"
 
     # Save the models here:
-    folder = "/mnt/shizhengwen/TrainedModels/"+"CNO_"+which_example
+    folder = "/mnt/shizhengwen/TrainedModels/"+"CNOK1_"+which_example
         
 else:
     
@@ -129,8 +130,8 @@ df = pd.DataFrame.from_dict([model_architecture_]).T
 df.to_csv(folder + '/net_architecture.txt', header=False, index=True, mode='w')
 
 res = 64
-data_path_input = '/mnt/shizhengwen/Dataset/Wave/64_64/u0s_K24.npy'
-data_path_output = '/mnt/shizhengwen/Dataset/Wave/64_64/uTs_K24.npy'
+data_path_input = '/mnt/shizhengwen/Dataset/Wave/64_64/u0s_K1.npy'
+data_path_output = '/mnt/shizhengwen/Dataset/Wave/64_64/uTs_K1.npy'
 
 
 if which_example == "shear_layer":
@@ -172,6 +173,7 @@ best_model_testing_error = 1000 #Save the model once it has less than 1000% rela
 patience = int(0.1 * epochs)    # Earlt stopping parameter
 counter = 0
 
+start_time = time.time()
 for epoch in range(epochs):
     with tqdm(unit="batch", disable=False) as tepoch:
         
@@ -260,3 +262,5 @@ for epoch in range(epochs):
     if counter>patience:
         print("Early Stopping")
         break
+
+print("time:", time.time() - start_time)

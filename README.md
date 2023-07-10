@@ -20,6 +20,125 @@ Download pretrained model
 gdown --folder https://drive.google.com/drive/folders/1bU_hRzUepsdoHk_DGk7zLfVnYJ4Jsl5E
 ```
 ## Heat Diffusion
+
+### Problem Description
+
+In this experiment, we discussed the two-dimensional parametric heat equation:
+$$u_t=\Delta u, t \in[0,T],\ (x_1,x_2)\in[-1,1]^2,\mu\in[-1,1]^d$$
+with the initial condition 
+
+
+
+speed of propagation $c=0.1$. **The objective is to approximate the operator**  $\cal{G}^\dagger:f\rightarrow$ $u(\cdot, T=5)$
+
+### Results
+
+![diffusion](assets/diffusion_d6.png)
+
+<font color =red> 把DeepOnet和mlp的放在这里</font>
+
+#### MLP
+
+- A feedforward 4-layer multilayer perceptron with 150 neurons in each layer is chosen for the experiment
+- The model was trained with Adam optimizer with a learning rate of 0.001 for 400-700 iterations
+- The model was trained and tested on the dataset of size 150 and 50 respectively with resolution $64 \times 64$
+
+#### DeepONet
+
+- The branch net is chosen as a fully connected neural network of size $[res \times res, 40, 40]$, and the trunk net is a fully connected neural network of size [2, 40, 40]
+- The model was trained with Adam and learning rate 0.001 for 10000 iterations
+- It was trained and tested on the dataset with resolution $64 \times 64$, which is normalized based on its mean value and standard deviation during training.
+
+#### FNO and CNO
+
+- The dataset was generated with $d=6$ with resolution $64 \times 64$.
+- For FNO and CNO, we used the same dataset with 150 training points and 50 test points.
+- The training epoch for FNO is 100 but 1000 for CNO.
+- The average error of FNO and CNO on test dataset is 2.8752 and 3.6586, respectively
+
+
+
+### Resolution invariance
+
+#### MLP
+
+The following table shows the mean L2 relative error tested on different grid resolutions using the trained models
+
+| resolution/d | 1          | 2          | 3           | 4           | 5           | 6           |
+| ------------ | ---------- | ---------- | ----------- | ----------- | ----------- | ----------- |
+| 32           | 7.1805     | 9.1301     | 11.9038     | 16.6792     | 44.4914     | 80.9182     |
+| **64**       | **6.7095** | **8.7627** | **11.4965** | **16.0574** | **42.6141** | **79.6393** |
+| 96           | 6.5696     | 8.6518     | 11.3748     | 15.8683     | 42.0200     | 79.2477     |
+| 128          | 6.5024     | 8.5987     | 11.3161     | 15.7774     | 41.7287     | 79.0583     |
+
+- We observe a fast drop of the performances of the model with increasing problem complexity as expected
+
+#### DeepOnet
+
+| resolution\d | 1          | 2          | 3          | 4          | 5          | 6          |
+| ------------ | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |
+| 32           | 6.9410     | 4.7216     | 4.2353     | 4.8877     | 6.2910     | 5.4723     |
+| **64**       | **4.7107** | **2.4742** | **2.5500** | **1.9887** | **2.7945** | **2.3586** |
+| 96           | 4.4996     | 2.4901     | 2.8338     | 2.3045     | 2.7332     | 2.7789     |
+| 128          | 4.3792     | 2.5635     | 2.9984     | 2.4686     | 2.6130     | 2.8031     |
+
+#### FNO
+
+Further more, we test the resolution invariance of FNO for different $d$. Similarly, we only use 150 training data to train the model. 50 data to test the model. We train the model on the resolution $64\times 64$ and test it performance in different resolution. **Note, due to the longer training process, we didn't test the resolution invariance of CNO**
+
+| resolution\d | 1          | 2          | 3          | 4          | 5          | 6          |
+| ------------ | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |
+| 32           | 2.6700     | 4.4333     | 4.5112     | 4.7639     | 4.7230     | 4.6837     |
+| **64**       | **1.9867** | **2.4443** | **2.6045** | **2.8313** | **2.9434** | **2.8752** |
+| 96           | 1.9704     | 2.5296     | 2.6708     | 2.7527     | 2.9380     | 2.9412     |
+| 128          | 1.9254     | 2.6723     | 2.8095     | 2.9824     | 3.0626     | 3.1439     |
+
+- We show figure of the resolution invariance for $d=6$.
+
+- It can be imagined that the effect of alising will become serious with increasing $d$。
+- In this problem, we didn't see the distinguished alising effect. We believed it may be a very easy task.
+
+
+
+## Wave equation
+
+### Problem Description
+
+In this experiment, we discussed the a prototypical *linear hyperbolic PDE*, given as follows:
+$$u_tt-c^2\Delta u=0,\ \text{in}\ D\times(0,T), u_0(x,y)=f(x,y)$$
+If the initial condition has following forms:
+
+$$f(x,y)=\frac{\pi}{K^2}\sum^K_{i,j=1}a_{ij}\cdot(i^2+j^2)^{-r}\sin(\pi ix)\sin(\pi jy)$$
+
+With $K=24$ and $r=1$. The exact solution at time $t>0$ is given by
+
+$$u(x,y,t)=\frac{\pi}{K^2}\sum^K_{i,j=1}a_{ij}\cdot(i^2+j^2)^{-r}\sin(\pi ix)\sin(\pi jy)\cos(c\pi t\sqrt{i^2+j^2}),\ \forall(x,y)\in D$$
+
+speed of propagation $c=0.1$. **The objective is to approximate the operator**  $\cal{G}^\dagger:f\rightarrow$ $u(\cdot, T=5)$
+
+### Results
+
+![waveK24](assets/WaveK24.png)
+
+#### FNO and CNO
+
+- 512 training dataset and 128 test dataset. Trained on the resolution with $64\times 64$. The test error of FNO on 128 test dataset is 8.0658 (~ 500 epochs). The error of CNO on 128 test dataset is 11.7288 (~ 400 epochs).
+
+500 epochs for FNO: 0.0939
+500 epochs for CNO: 1.6031
+
+# Conclusions
+
+- At least, we found that the CNO is not as easy to train as FNO. Often, we need more training epoches and careful tuning to achive the same performance.
+
+
+
+___
+
+<font color=red>下面都不要</font>
+
+## Heat Diffusion
+
 ### Problem Description
 
 In this experiment, we discussed the two-dimensional parametric heat equation:
@@ -71,8 +190,6 @@ The following table shows the mean L2 relative error tested on different grid re
 | d=6 | <img align="center"  src="./assets/DON/diffusion/res_d6.png"> | <img align="center"  src="./assets/DON/diffusion/loss_d6.png"> | 2.3586 |
 
 #### FNO and CNO
-
-![diffusion](assets/Diffusion_compare.png)
 
 - The dataset was generated with $d=6$ with resolution $64 \times 64$.
 - For FNO and CNO, we used the same dataset with 150 training points and 50 test points.
@@ -138,11 +255,12 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 - After around 6000 iterations, there is not much improvement.
 
 #### FNO and CNO
-![wave_compare](assets/wave_compare.png)
+![wave_compare](assets/waveK24.png)
 
 - 512 training dataset and 128 test dataset. Trained on the resolution with $64\times 64$. The test error of FNO on 128 test dataset is 8.0658 (~ 500 epochs). The error of CNO on 128 test dataset is 11.7288 (~ 400 epochs).
 
-
+500 epochs for FNO: 0.0939
+500 epochs for CNO: 1.6031
 
 # Conclusions
 
