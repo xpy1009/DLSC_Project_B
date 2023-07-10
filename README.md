@@ -33,7 +33,7 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 ### Results
 
-![diffusion](assets/diffusion_d6.png)
+![diffusion](assets/Diffusion_compare2.png)
 
 <font color =red> 把DeepOnet和mlp的放在这里</font>
 
