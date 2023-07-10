@@ -25,7 +25,7 @@ if (args.e == 'diffusion'):
 elif (args.e == 'wave'):
   n_train = 512
   n_test = 128
-  n_d = 1
+  n_d = 2
   n_res = 1
 else:
   print(args.e + " not implemented")
@@ -39,9 +39,11 @@ for d in range(n_d):
   if (args.e == 'diffusion'): 
     u_0 = np.load('Dataset/' + args.e + '/64_64/u0s_d' + str(d+1) + '.npy')
     u_T = np.load('Dataset/' + args.e + '/64_64/uTs_d' + str(d+1) + '.npy')
+    img_id = 20
   else:
-    u_0 = np.load('Dataset/' + args.e + '/64_64/u0s_K24.npy')
-    u_T = np.load('Dataset/' + args.e + '/64_64/uTs_K24.npy')
+    u_0 = np.load('Dataset/' + args.e + '/64_64/u0s_K' + str(24**d) + '.npy')
+    u_T = np.load('Dataset/' + args.e + '/64_64/uTs_K' + str(24**d) + '.npy')
+    img_id = 23
 
   # print(u_0.shape)
   # print(u_T.shape)
@@ -124,6 +126,7 @@ for d in range(n_d):
       X_eval = (ev_inputs.astype(np.float32), ev_loc.astype(np.float32))
       y_eval = ev_label.astype(np.float32)
     else:
+      res = 64
       X_eval = X_test
       y_eval = y_test
       ev_loc = input_x
@@ -136,20 +139,25 @@ for d in range(n_d):
     losses[r, d] = err
 
   # visualize results
-  # fig, axs = plt.subplots(1, 2, figsize=(16, 8), dpi=150)
-  # im1 = axs[0].scatter(ev_loc[:, 1], ev_loc[:, 0], c=pred[0,:], cmap="jet")
-  # axs[0].set_xlabel("x1")
-  # axs[0].set_ylabel("x2")
-  # plt.colorbar(im1, ax=axs[0])
-  # axs[0].grid(True, which="both", ls=":")
-  # axs[0].set_title("pred")
-  # im2 = axs[1].scatter(ev_loc[:, 1], ev_loc[:, 0], c=gt[0,:], cmap="jet")
-  # axs[1].set_xlabel("x1")
-  # axs[1].set_ylabel("x2")
-  # plt.colorbar(im2, ax=axs[1])
-  # axs[1].grid(True, which="both", ls=":")
-  # axs[1].set_title("ground truth")
+  fig, axs = plt.subplots(1, 2, figsize=(16, 8), dpi=150)
+  im1 = axs[0].contourf(ev_loc[:, 0].reshape(res,res), ev_loc[:, 1].reshape(res,res), gt[-5,:].reshape(res,res), 64, cmap="jet")
+  axs[0].set_xlabel("x1")
+  axs[0].set_ylabel("x2")
+  plt.colorbar(im1, ax=axs[0])
+  axs[0].grid(True, which="both", ls=":")
+  axs[0].set_title("ground truth")
+  axs[0].set(aspect="equal")
+  im2 = axs[1].contourf(ev_loc[:, 0].reshape(res,res), ev_loc[:, 1].reshape(res,res), pred[-5,:].reshape(res,res), 64, cmap="jet")
+  axs[1].set_xlabel("x1")
+  axs[1].set_ylabel("x2")
+  plt.colorbar(im2, ax=axs[1])
+  axs[1].grid(True, which="both", ls=":")
+  axs[1].set_title("pred")
+  axs[1].set(aspect="equal")
   # plt.show()
-  # plt.savefig('assets/DON/' + args.e + '/res_d' + str(d+1) + '.png', dpi=150)
+  if (args.e=='diffusion'):
+    plt.savefig('assets/DON/' + args.e + '/res_d' + str(d+1) + '.png', dpi=150)
+  else:
+    plt.savefig('assets/DON/' + args.e + '/res_K' + str(24**d) + '.png', dpi=150)
 
 print("MSE Losses:", losses)
