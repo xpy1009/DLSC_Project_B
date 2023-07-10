@@ -171,20 +171,20 @@ np.random.seed(0)
 # writer = SummaryWriter(log_dir="Diffusion_d5")
 # tags = ["train_loss", "data_error","learning_rate"]
 
-pre_model_save_path = '../../model/Diffusion/FNO/FN0_d6_checkpoint100.pt'
+pre_model_save_path = '../../model/Diffusion/FNO/FN0_d1_checkpoint100.pt'
 
 n_train = 150
 n_test = 50
 res = 64
 
-u_0 = torch.from_numpy(np.load('../../Dataset/Diffusion/64_64/u0s_d6.npy').reshape(n_train + n_test, res, res, 3)).float()
-u_T = torch.from_numpy(np.load('../../Dataset/Diffusion/64_64/uTs_d6.npy').reshape(n_train + n_test, res, res, 1)).float()
+u_0 = torch.from_numpy(np.load('../../Dataset/Diffusion/64_64/u0s_d1.npy').reshape(n_train + n_test, res, res, 3)).float()
+u_T = torch.from_numpy(np.load('../../Dataset/Diffusion/64_64/uTs_d1.npy').reshape(n_train + n_test, res, res, 1)).float()
 print("shape of u_0:", u_0.shape)
 print("shape of u_T:", u_T.shape)
 
 # ------------rescal inverse-------------------#
-u_0_scale = torch.from_numpy(np.load('../../Dataset/Diffusion/64_64/u0s_d6.npy').reshape(n_train + n_test, 64, 64, 3)).float()
-u_T_scale = torch.from_numpy(np.load('../../Dataset/Diffusion/64_64/uTs_d6.npy').reshape(n_train + n_test, 64, 64, 1)).float()
+u_0_scale = torch.from_numpy(np.load('../../Dataset/Diffusion/64_64/u0s_d1.npy').reshape(n_train + n_test, 64, 64, 3)).float()
+u_T_scale = torch.from_numpy(np.load('../../Dataset/Diffusion/64_64/uTs_d1.npy').reshape(n_train + n_test, 64, 64, 1)).float()
 # scale data with normalization
 min_vals_input = u_0_scale[0:n_train, :, :, 0].min()
 max_vals_input = u_0_scale[0:n_train, :, :, 0].max()
@@ -240,20 +240,20 @@ print("test_mse = ", test_relative_l2)
 print(output_batch.shape)
 print(output_pred_batch.shape)
 fig, axs = plt.subplots(1, 2, figsize=(16, 8), dpi=150)
-# im1 = axs[0].contourf(u_0[0,:,:,1],u_0[0,:,:,2],output_batch[5,:,:,0],levels = 64,cmap="jet")
-im1 = axs[0].imshow(input_batch[20, :, :, 0], cmap="jet")
+im1 = axs[0].contourf(u_0[0,:,:,1],u_0[0,:,:,2],input_batch[20,:,:,0],levels = 64,cmap="jet")
+#im1 = axs[0].imshow(input_batch[20, :, :, 0], cmap="jet")
 axs[0].set_xlabel("x1")
 axs[0].set_ylabel("x2")
 plt.colorbar(im1, ax=axs[0])
 axs[0].grid(True, which="both", ls=":")
 axs[0].set_title("true")
 axs[0].set(aspect='equal')
-# im2 = axs[1].contourf(u_0[0,:,:,1],u_0[0,:,:,2],output_pred_batch.detach()[5,:,:,0],levels = 64,cmap="jet")
-im2 = axs[1].imshow(output_pred_batch.detach()[20, :, :, 0], cmap="jet")
+im2 = axs[1].contourf(u_0[0,:,:,1],u_0[0,:,:,2],output_pred_batch.detach()[20,:,:,0],levels = 64,cmap="jet")
+#im2 = axs[1].imshow(output_pred_batch.detach()[20, :, :, 0], cmap="jet")
 axs[1].set_xlabel("x1")
 axs[1].set_ylabel("x2")
 plt.colorbar(im2, ax=axs[1])
 axs[1].grid(True, which="both", ls=":")
 axs[1].set_title("prediction")
 axs[1].set(aspect='equal')
-plt.savefig('test.png', dpi=150)
+plt.savefig('../assets/FNO_diffusion_d1.png', dpi=150)
