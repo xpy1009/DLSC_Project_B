@@ -33,7 +33,7 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 ### Results
 
-![diffusion](assets/diffusion_d6.png)
+![diffusion](assets/Diffusion_compare2.png)
 
 <font color =red> 把DeepOnet和mlp的放在这里</font>
 
@@ -118,7 +118,7 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 
 ### Results
 
-![waveK24](assets/WaveK24.png)
+![waveK24](assets/wave_compare2.png)
 
 #### FNO and CNO
 
@@ -137,7 +137,7 @@ ___
 
 <font color=red>下面都不要</font>
 
-## Heat Diffusion
+<!-- ## Heat Diffusion
 
 ### Problem Description
 
@@ -269,4 +269,4 @@ speed of propagation $c=0.1$. **The objective is to approximate the operator**  
 ## Q&A
 
 1. Unable to run the GPU of the CNO on the cluster. `Ninja is required to load C++ extensions in Pycharm`
-   - Solution: [CSDN](https://blog.csdn.net/Highlight_Jin/article/details/126070409?spm=1001.2101.3001.6650.6&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-6-126070409-blog-129278321.235%5Ev38%5Epc_relevant_anti_vip&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-6-126070409-blog-129278321.235%5Ev38%5Epc_relevant_anti_vip&utm_relevant_index=7)
+   - Solution: [CSDN](https://blog.csdn.net/Highlight_Jin/article/details/126070409?spm=1001.2101.3001.6650.6&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-6-126070409-blog-129278321.235%5Ev38%5Epc_relevant_anti_vip&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-6-126070409-blog-129278321.235%5Ev38%5Epc_relevant_anti_vip&utm_relevant_index=7) -->
