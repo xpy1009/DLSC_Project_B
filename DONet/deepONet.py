@@ -25,7 +25,7 @@ if (args.e == 'diffusion'):
 elif (args.e == 'wave'):
   n_train = 512
   n_test = 128
-  n_d = 2
+  n_d = 1
   n_res = 1
 else:
   print(args.e + " not implemented")
@@ -40,6 +40,8 @@ for d in range(n_d):
     u_0 = np.load('Dataset/' + args.e + '/64_64/u0s_d' + str(d+1) + '.npy')
     u_T = np.load('Dataset/' + args.e + '/64_64/uTs_d' + str(d+1) + '.npy')
     img_id = 20
+    if (d!=0 and d!=5):
+      continue
   else:
     u_0 = np.load('Dataset/' + args.e + '/64_64/u0s_K' + str(24**d) + '.npy')
     u_T = np.load('Dataset/' + args.e + '/64_64/uTs_K' + str(24**d) + '.npy')
@@ -139,25 +141,46 @@ for d in range(n_d):
     losses[r, d] = err
 
   # visualize results
-  fig, axs = plt.subplots(1, 2, figsize=(16, 8), dpi=150)
-  im1 = axs[0].contourf(ev_loc[:, 0].reshape(res,res), ev_loc[:, 1].reshape(res,res), gt[-5,:].reshape(res,res), 64, cmap="jet")
-  axs[0].set_xlabel("x1")
-  axs[0].set_ylabel("x2")
-  plt.colorbar(im1, ax=axs[0])
-  axs[0].grid(True, which="both", ls=":")
-  axs[0].set_title("ground truth")
-  axs[0].set(aspect="equal")
-  im2 = axs[1].contourf(ev_loc[:, 0].reshape(res,res), ev_loc[:, 1].reshape(res,res), pred[-5,:].reshape(res,res), 64, cmap="jet")
-  axs[1].set_xlabel("x1")
-  axs[1].set_ylabel("x2")
-  plt.colorbar(im2, ax=axs[1])
-  axs[1].grid(True, which="both", ls=":")
-  axs[1].set_title("pred")
-  axs[1].set(aspect="equal")
-  # plt.show()
-  if (args.e=='diffusion'):
-    plt.savefig('assets/DON/' + args.e + '/res_d' + str(d+1) + '.png', dpi=150)
-  else:
-    plt.savefig('assets/DON/' + args.e + '/res_K' + str(24**d) + '.png', dpi=150)
+  if (d==0 or d==n_d-1):
+    res = 64
+    if (args.e=='diffusion'):
+      data = np.load(f"assets/plotting_utils/heat_plotting_data_d{d+1}.npy")
+      u_0 = data[:, 3+d].reshape(1,-1)
+      u_T = data[:, 4+d].reshape(1,-1)
+    else:
+      data = np.load(f"assets/plotting_utils/wave_plotting_data_d{24**d}.npy")
+      u_0 = data[:, 2+24**d * 24**d].reshape(1,-1)
+      u_T = data[:, 3+24**d * 24**d].reshape(1,-1)
+
+    ev_inputs = (u_0 - mean_in) / std_in
+    ev_label = (u_T - mean_out) / std_out
+    # print(u_0.shape, u_T.shape)
+    ev_loc = data[:, :2]
+    X_eval = (ev_inputs.astype(np.float32), ev_loc.astype(np.float32))
+    y_eval = ev_label.astype(np.float32)
+    pred = model.predict(X_eval)
+    pred = pred * std_out + mean_out
+    gt = y_eval * std_out + mean_out
+
+    fig, axs = plt.subplots(1, 2, figsize=(16, 8), dpi=150)
+    im1 = axs[0].contourf(ev_loc[:, 0].reshape(res,res), ev_loc[:, 1].reshape(res,res), gt.reshape(res,res), 64, cmap="jet")
+    axs[0].set_xlabel("x1")
+    axs[0].set_ylabel("x2")
+    plt.colorbar(im1, ax=axs[0])
+    axs[0].grid(True, which="both", ls=":")
+    axs[0].set_title("ground truth")
+    axs[0].set(aspect="equal")
+    im2 = axs[1].contourf(ev_loc[:, 0].reshape(res,res), ev_loc[:, 1].reshape(res,res), pred.reshape(res,res), 64, cmap="jet", vmin=gt.min(), vmax=gt.max())
+    axs[1].set_xlabel("x1")
+    axs[1].set_ylabel("x2")
+    plt.colorbar(im2, ax=axs[1])
+    axs[1].grid(True, which="both", ls=":")
+    axs[1].set_title("pred")
+    axs[1].set(aspect="equal")
+    # plt.show()
+    if (args.e=='diffusion'):
+      plt.savefig('assets/DON/' + args.e + '/res_d' + str(d+1) + '.png', dpi=150)
+    else:
+      plt.savefig('assets/DON/' + args.e + '/res_K' + str(24**d) + '.png', dpi=150)
 
 print("MSE Losses:", losses)

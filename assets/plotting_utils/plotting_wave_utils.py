@@ -3,9 +3,9 @@ import torch
 import matplotlib.pyplot as plt
 
 # change d to get desire plotting data
-d = 1
+d = 24
 res = 64
-data = np.load(f"./wave_plotting_data_d{d}.npy")
+data = np.load(f"assets/plotting_utils/wave_plotting_data_d{d}.npy")
 print(data[0])
 input_x = data[:, :2]
 mu = data[0, 2:2+d*d]
@@ -27,4 +27,4 @@ axs[1].set_ylabel("x2")
 axs[1].set_title("u_T")
 plt.colorbar(im2, ax=axs[1])
 axs[1].grid(True, which="both", ls=":")
-plt.show()
+plt.savefig(f'assets/plotting_utils/wave_K{d}.png', dpi=150)

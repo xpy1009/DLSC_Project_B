@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 d = 6
 res = 64
 # replace with desired plotting data file path
-data = np.load(f"./heat_plotting_data_d{d}.npy")
+data = np.load(f"assets/plotting_utils/heat_plotting_data_d{d}.npy")
 print(data[0])
 input_x = data[:, :2]
 mu = data[0, 2:2+d]
@@ -27,4 +27,4 @@ axs[1].set_ylabel("x2")
 axs[1].set_title("u_T")
 plt.colorbar(im2, ax=axs[1])
 axs[1].grid(True, which="both", ls=":")
-plt.show()
+plt.savefig(f'assets/plotting_utils/heat_d{d}.png', dpi=150)
