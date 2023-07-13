@@ -1,8 +1,7 @@
-# DLSC_Project_B
+# Neural Operators and Operator Networks vs Parametric Approach
+Course project for Deep Learning in Scientific Computing, part B.
 
-Neural Operators and Operator Networks vs Parametric Approach
-
-:red_circle: **Please note that we didn't spend much time in doing the cross-validation and tuning the hyperparameters. The performance of the model can be further improved. And the comparision between these operator learning models may be different after carefully tuning.**
+:red_circle: **Please note that we didn't spend much time in doing the cross-validation and tuning the hyperparameters. The performance of the model can be further improved. And the comparision between these operator learning models may be different after careful tuning.**
 
 ## Dataset and Pretrained Model
 
@@ -23,19 +22,13 @@ gdown --folder https://drive.google.com/drive/folders/1bU_hRzUepsdoHk_DGk7zLfVnY
 ### Problem Description
 
 In this experiment, we discussed the two-dimensional parametric heat equation:
-$$
-u_t=\Delta u, t \in[0,T],\ (x_1,x_2)\in[-1,1]^2,\mu\in[-1,1]^d
-$$
+$$u_t=\Delta u, t \in[0,T],\ (x_1,x_2)\in[-1,1]^2,\mu\in[-1,1]^d$$
 
 with the initial condition:
-$$
-u(0,x_1,x_2,\mu)=u_0(x_1,x_2,\mu)=\frac{1}{d}\sum^d_{m=1}\sum^d_{m=1}u_0^m(x_1,x_2,\mu_m),
-$$
+$$u(0,x_1,x_2,\mu)=u_0(x_1,x_2,\mu)=\frac{1}{d}\sum^d_{m=1}\sum^d_{m=1}u_0^m(x_1,x_2,\mu_m),$$
 
 where $u_0^m(x_1,x_2,\mu_m)=-\mu_m\sin(\pi mx_1)\sin(\pi mx_2)/m^{0.5}$. The exact solution is given by:
-$$
-    u(t,x_1,x_2,\mu)=\frac{1}{d}\sum^d_{m=1}\sum^d_{m=1}u_0^m(x_1,x_2,\mu_m) e^{-2\pi^2m^2t}
-$$
+$$u(t,x_1,x_2,\mu)=\frac{1}{d}\sum^d_{m=1}\sum^d_{m=1}u_0^m(x_1,x_2,\mu_m) e^{-2\pi^2m^2t}$$
 
 In the following results we use speed of propagation $c=0.1$. **The objective is to approximate the operator**  ${\cal G}: u(0, \cdot, \cdot)\rightarrow u(T=0.01, \cdot, \cdot)$
 
