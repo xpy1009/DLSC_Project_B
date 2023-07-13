@@ -58,7 +58,9 @@ We generated 200 data sets with the resolution of $64\times 64$ for $d=1$ and $d
 
 
 ### Resolution invariance
-Furthermore, we test the resolution invariance of these models for different $d$. Similarly, we only use 150 training data to train the model and 50 data to test the model. We train the models on the resolution of $64\times 64$ and test the performance under different resolution. **Note, due to the longer training process, we didn't test the resolution invariance of CNO**
+Furthermore, we test the resolution invariance of these models for different $d$. Similarly, we only use 150 training data to train the model and 50 data to test the model. We train the models on the resolution of $64\times 64$ and test the performance under different resolution. 
+
+**Note, due to the longer training process, we didn't test the resolution invariance of CNO**
 
 The following tables show the mean L2 relative error tested on different grid resolutions using the trained models
 
