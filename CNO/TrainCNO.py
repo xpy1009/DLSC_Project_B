@@ -71,7 +71,7 @@ if len(sys.argv) == 1:
     which_example = "Heatdiffusion"
 
     # Save the models here:
-    folder = "/mnt/shizhengwen/TrainedModels/"+"CNO_"+which_example
+    folder = "/mnt/shizhengwen/TrainedModels/"+"CNOd1_"+which_example
         
 else:
     
@@ -130,8 +130,8 @@ df = pd.DataFrame.from_dict([model_architecture_]).T
 df.to_csv(folder + '/net_architecture.txt', header=False, index=True, mode='w')
 
 res = 64
-data_path_input = '/mnt/shizhengwen/Dataset/diffusion/64_64/u0s_d6.npy'
-data_path_output = '/mnt/shizhengwen/Dataset/diffusion/64_64/uTs_d6.npy'
+data_path_input = '/mnt/shizhengwen/Dataset/diffusion/64_64/u0s_d1.npy'
+data_path_output = '/mnt/shizhengwen/Dataset/diffusion/64_64/uTs_d1.npy'
 
 
 if which_example == "shear_layer":
