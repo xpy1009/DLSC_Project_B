@@ -49,6 +49,8 @@ class MLPnet(nn.Module):
         nn.ReLU(),
         nn.Linear(hidden_size, hidden_size),
         nn.ReLU(),
+        nn.Linear(hidden_size, hidden_size),
+        nn.ReLU(),
         nn.Linear(hidden_size, output_dim)
     )
 
@@ -67,21 +69,21 @@ x_grid = x_grid.reshape(-1,1)
 y_grid = y_grid.reshape(-1,1)
 grid = torch.cat((x_grid, y_grid), 1)
 
-d = 5
+d = 1
 T = 5
 domain_extrema = np.array([[0, 1], [0, 1]]) # x in [0, 1]^2
 input_x = convert(grid, domain_extrema)
 n_x = input_x.shape[0]
-pre_model_save_path = f'./model/MLP_wave_{d}_checkpoint.pt'
-# pre_model_save_path = None
+# pre_model_save_path = f'./model/MLP_wave_{d}_checkpoint.pt'
+pre_model_save_path = None
 save_path = f'./model/MLP_wave_{d}_checkpoint.pt'
 use_generated_data = True
 
 print("Loading trainig data...")
 if use_generated_data:
-  with open(f'./Dataset/wave/input_train_{res}_d{d}.npy', 'rb') as f:
+  with open(f'./Dataset_MLP/wave/input_train_{res}_d{d}.npy', 'rb') as f:
     input_train = torch.from_numpy(np.load(f))
-  with open(f'./Dataset/wave/output_train_{res}_d{d}.npy', 'rb') as f_out:  
+  with open(f'./Dataset_MLP/wave/output_train_{res}_d{d}.npy', 'rb') as f_out:  
     output_train = torch.from_numpy(np.load(f_out))
   
 else:    
@@ -94,14 +96,14 @@ else:
   input_train = torch.concatenate(input_train, axis=0).reshape(train_size, n_x, -1)
   output_train = torch.stack(output_train).reshape(train_size, n_x, -1)
   print("Saving generated training data...")
-  np.save(f'./Dataset/wave/input_train_{res}_d{d}.npy', input_train)
-  np.save(f'./Dataset/wave/output_train_{res}_d{d}.npy', output_train)
+  np.save(f'./Dataset_MLP/wave/input_train_{res}_d{d}.npy', input_train)
+  np.save(f'./Dataset_MLP/wave/output_train_{res}_d{d}.npy', output_train)
 
 print("Loading validation data...")
 if use_generated_data:
-  with open(f'./Dataset/wave/input_test_{res}_d{d}.npy', 'rb') as f:
+  with open(f'./Dataset_MLP/wave/input_test_{res}_d{d}.npy', 'rb') as f:
     input_test = torch.from_numpy(np.load(f))
-  with open(f'./Dataset/wave/output_test_{res}_d{d}.npy', 'rb') as f_out:  
+  with open(f'./Dataset_MLP/wave/output_test_{res}_d{d}.npy', 'rb') as f_out:  
     output_test = torch.from_numpy(np.load(f_out))
 else:    
   input_test, output_test = [], []
@@ -113,14 +115,14 @@ else:
   input_test = torch.concatenate(input_test, axis=0).reshape(test_size, n_x, -1)
   output_test = torch.stack(output_test).reshape(test_size, n_x, -1)
   print("Saving generated testing data...")
-  np.save(f'./Dataset/wave/input_test_{res}_d{d}.npy', input_test)
-  np.save(f'./Dataset/wave/output_test_{res}_d{d}.npy', output_test)
+  np.save(f'./Dataset_MLP/wave/input_test_{res}_d{d}.npy', input_test)
+  np.save(f'./Dataset_MLP/wave/output_test_{res}_d{d}.npy', output_test)
 
 batch_size = 16
 training_set = DataLoader(torch.utils.data.TensorDataset(input_train, output_train), batch_size=batch_size, shuffle=True)
 testing_set = DataLoader(torch.utils.data.TensorDataset(input_test, output_test), batch_size=50, shuffle=True)
-model = MLPnet(2+d*d, 150, 1)
-n_epoch = 0
+model = MLPnet(2+d*d, 250, 1)
+n_epoch = 1000
 learning_rate = 0.0001
 start_epoch = 0
 
@@ -142,6 +144,8 @@ for param_group in optimizer.param_groups:
 loss_criterion = nn.MSELoss()
 freq_print = 1
 history = []
+history_test = []
+history_l2 = []
 print("Start training...")
 
 for epoch_c in range(n_epoch):
@@ -165,12 +169,17 @@ for epoch_c in range(n_epoch):
   with torch.no_grad():
         model.eval()
         test_relative_l2 = 0.0
+        loss_t = 0.0
         for step, data in enumerate(testing_set):
             input_batch, output_batch = data
             output_pred_batch = model(input_batch)
+            loss_t += loss_criterion(output_pred_batch, output_batch).item()
             loss_f = (torch.mean((output_pred_batch - output_batch) ** 2) / torch.mean(output_batch ** 2)) ** 0.5 * 100
             test_relative_l2 += loss_f.item()
         test_relative_l2 /= len(testing_set)
+        loss_t /= len(testing_set)
+        history_l2.append(test_relative_l2)
+        history_test.append(loss_t)
         # save model
         if  test_relative_l2 < best_loss:
             save_checkpoint(model, optimizer, scheduler, epoch, test_relative_l2, save_path)
@@ -179,42 +188,49 @@ for epoch_c in range(n_epoch):
 
   if epoch % freq_print == 0: print("######### Epoch:", epoch, " ######### Train Loss:", train_mse, " ######### Relative L2 Test Norm:", test_relative_l2)          
 
-if n_epoch > 2:
+
+if n_epoch > 0:
   print('Final Loss: ', history[-1])
 
   plt.figure(dpi=150)
   plt.grid(True, which="both", ls=":")
   plt.plot(np.arange(start_epoch, len(history) + start_epoch), history, label="Train Loss")
+  plt.plot(np.arange(start_epoch, len(history_test) + start_epoch), history_test, label="Test Loss")
+  plt.plot(np.arange(start_epoch, len(history_l2) + start_epoch), history_l2, label="Test Metric")
   plt.xscale("log")
   plt.yscale("log")
   plt.legend()
-  plt.savefig(f'loss_MLP_wave_{res}_{d}.png', dpi=150)
+  plt.savefig(f'../assets/MLP/wave/loss_MLP_{res}_{d}.png', dpi=150)
 
-  test_pred = model(input_test)
-  loss_eval = loss_criterion(test_pred, output_test)
-  print("Validation loss:", loss_eval.item())
+test_pred = model(input_test)
+loss_eval = loss_criterion(test_pred, output_test)
+print("Validation loss:", loss_eval.item())
+loss_f = (torch.mean((test_pred - output_test) ** 2) / torch.mean(output_test ** 2)) ** 0.5 * 100
+print("Mean L2 error:", loss_f.item())
 
-inputs_x = input_x 
-mu = np.random.uniform(-1, 1, (d, d))
-ground_truth = u_T = final_value_fast(inputs_x, mu, T)
-inputs = np.concatenate((inputs_x, np.tile(mu.reshape(-1), (n_x,1))), axis=1)
-inputs = torch.FloatTensor(inputs)
-predicted = model(inputs)
-# print(loss_criterion(predicted, ground_truth.reshape(n_x, 1)).item())
-err = (torch.mean((predicted - ground_truth.reshape(n_x, 1)) ** 2) / torch.mean(ground_truth.reshape(n_x, 1) ** 2)) ** 0.5 * 100
-print("Err:", err.item())
-fig, axs = plt.subplots(1, 2, figsize=(16, 8), dpi=150)
-# im1 = axs[0].scatter(inputs_x[:, 1], inputs_x[:, 0], c=predicted.detach().numpy(), cmap="jet")
-im1 = axs[0].contourf(input_x[:,0].reshape(res,res),input_x[:,1].reshape(res,res),predicted.detach().numpy().reshape(res,res),levels = 64,cmap="jet")
-axs[0].set_xlabel("x1")
-axs[0].set_ylabel("x2")
-axs[0].set_title("Predicted")
-plt.colorbar(im1, ax=axs[0])
-axs[0].grid(True, which="both", ls=":")
-im2 = axs[1].contourf(input_x[:,0].reshape(res,res),input_x[:,1].reshape(res,res),ground_truth.reshape(res,res),levels = 64,cmap="jet")
-axs[1].set_xlabel("x1")
-axs[1].set_ylabel("x2")
-axs[1].set_title("Ground Truth")
-plt.colorbar(im2, ax=axs[1])
-axs[1].grid(True, which="both", ls=":")
-plt.savefig(f'res_MLP_wave_{res}_{d}.png', dpi=150)
+# inputs_x = input_x 
+# mu = np.random.uniform(-1, 1, (d, d))
+# ground_truth = u_T = final_value_fast(inputs_x, mu, T)
+# u_0 = initial_condition_fast(inputs_x, mu)
+# inputs = np.concatenate((inputs_x, np.tile(mu.reshape(-1), (n_x,1))), axis=1)
+# np.save(f"./wave_plotting_data_d{d}.npy", np.concatenate([inputs_x, torch.FloatTensor(np.tile(mu.reshape(-1), (n_x,1))), u_0.reshape(-1,1), u_T.reshape(-1, 1)], axis=1))
+# inputs = torch.FloatTensor(inputs)
+# predicted = model(inputs)
+# # print(loss_criterion(predicted, ground_truth.reshape(n_x, 1)).item())
+# err = (torch.mean((predicted - ground_truth.reshape(n_x, 1)) ** 2) / torch.mean(ground_truth.reshape(n_x, 1) ** 2)) ** 0.5 * 100
+# print("Err:", err.item())
+# fig, axs = plt.subplots(1, 2, figsize=(16, 8), dpi=150)
+# # im1 = axs[0].scatter(inputs_x[:, 1], inputs_x[:, 0], c=predicted.detach().numpy(), cmap="jet")
+# im1 = axs[0].contourf(input_x[:,0].reshape(res,res),input_x[:,1].reshape(res,res),predicted.detach().numpy().reshape(res,res),levels = 64,cmap="jet")
+# axs[0].set_xlabel("x1")
+# axs[0].set_ylabel("x2")
+# axs[0].set_title("Predicted")
+# plt.colorbar(im1, ax=axs[0])
+# axs[0].grid(True, which="both", ls=":")
+# im2 = axs[1].contourf(input_x[:,0].reshape(res,res),input_x[:,1].reshape(res,res),ground_truth.reshape(res,res),levels = 64,cmap="jet")
+# axs[1].set_xlabel("x1")
+# axs[1].set_ylabel("x2")
+# axs[1].set_title("Ground Truth")
+# plt.colorbar(im2, ax=axs[1])
+# axs[1].grid(True, which="both", ls=":")
+# plt.savefig(f'../assets/MLP/wave/res_MLP_wave_{res}_{d}.png', dpi=150)
